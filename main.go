@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"developer.globalsiag.com/hector/sortPhoto/scann"
+	"github.com/hdomin/sortPhoto/scann"
 )
 
 var dirOrigin string
