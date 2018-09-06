@@ -7,9 +7,9 @@ import (
 	"path"
 	"strconv"
 	"sync"
-	"syscall"
 	"time"
 
+	"github.com/djherbis/times"
 	"github.com/rwcarlsen/goexif/exif"
 )
 
@@ -27,9 +27,11 @@ func MoveFile(inc chan int, mu *sync.Mutex, dirOrigin string, name string, dir b
 	f, t, err := decodeFile(dirOrigin, name)
 
 	if err == nil {
-		t2, _ := f.DateTime()
-		if year, _ := strconv.Atoi(t2.Format("2006")); year > 1900 {
-			t = t2
+		if f != nil {
+			t2, _ := f.DateTime()
+			if year, _ := strconv.Atoi(t2.Format("2006")); year > 1900 {
+				t = t2
+			}
 		}
 	}
 
@@ -43,19 +45,33 @@ func MoveFile(inc chan int, mu *sync.Mutex, dirOrigin string, name string, dir b
 
 //func decodeFile(dirOrigin string, name string) (*exif.Exif, error) {
 func decodeFile(dirOrigin string, name string) (*exif.Exif, time.Time, error) {
+
+	//fmt.Println(path.Join(dirOrigin, name))
+
 	f, err := os.Open(path.Join(dirOrigin, name))
 	if err != nil || f == nil {
 		log.Fatal(err)
 	}
+	x, err := exif.Decode(f)
+	f.Close()
 
-	var st syscall.Stat_t
-	if err = syscall.Stat(path.Join(dirOrigin, name), &st); err != nil {
+	/*
+		var st syscall.Stat_t
+		if err = syscall.Stat(path.Join(dirOrigin, name), &st); err != nil {
+			log.Fatal(err)
+		}
+
+		t := time.Unix(int64(st.Ctimespec.Sec), int64(st.Ctimespec.Nsec))
+	*/
+
+	var t time.Time
+
+	tf, err := times.Stat(path.Join(dirOrigin, name))
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	t := time.Unix(int64(st.Ctimespec.Sec), int64(st.Ctimespec.Nsec))
-
-	x, err := exif.Decode(f)
+	t = tf.ModTime()
 
 	return x, t, err
 }
@@ -94,6 +110,7 @@ func setPathTarget(inc chan int, t time.Time, dirTarget string, name string) str
 }
 
 func moveFileTarget(fileOrigin string, fileTarget string, dirError string) {
+	//fmt.Printf("From: %v  To: %v", fileOrigin, fileTarget)
 	err := os.Rename(fileOrigin, fileTarget)
 
 	if err != nil {

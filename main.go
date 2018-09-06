@@ -12,9 +12,8 @@ var dirOrigin string
 var dirTarget string
 
 func init() {
-	//dirOrigin = "/Users/hector/Pictures/Fanny/2015-08-22"
-	dirOrigin = "/Users/hector/Pictures/TEST"
-	dirTarget = "/Users/hector/Downloads/test"
+	dirOrigin = "C:\\Users\\alber\\Downloads\\Fuente"
+	dirTarget = "C:\\Users\\alber\\Downloads\\Destino"
 }
 
 func main() {
